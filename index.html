@@ -370,14 +370,14 @@ function updateMergedCanvas() {
         mergedCtx.save();
         mergedCtx.roundRect(padding * scaleFactor, y, photoWidth * scaleFactor, photoHeight * scaleFactor, 8 * scaleFactor).clip();
 
-        // Draw the photo
+        // --- Ubah di sini: buat tempCanvas dari foto asli, lalu apply effect ---
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = drawWidth;
         tempCanvas.height = drawHeight;
         const tempCtx = tempCanvas.getContext('2d');
         tempCtx.drawImage(img, 0, 0, drawWidth, drawHeight);
 
-        // Terapkan effect jika dipilih
+        // Terapkan effect jika dipilih (selalu dari foto asli)
         if (effectSelect.value !== 'none') {
             applyEffect(tempCtx, effectSelect.value, drawWidth, drawHeight);
         }
@@ -432,33 +432,18 @@ downloadBtn.addEventListener('click', () => {
 // Replace the capturePhoto function with this improved version
 function capturePhoto(style, index) {
     return new Promise(resolve => {
-        // Capture image at full resolution
+        // Capture gambar asli (tanpa efek)
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        
-        // Apply selected effect
-        if (effectSelect.value !== 'none') {
-            applyEffect(ctx, effectSelect.value, canvas.width, canvas.height);
-        }
-        
-        // Apply selected overlay
-        if (overlaySelect.value !== 'none') {
-            drawOverlay(ctx, overlaySelect.value, canvas.width, canvas.height);
-        }
-        
-        // Use maximum quality for the image data
-        const imgData = canvas.toDataURL('image/png', 1.0);
-        capturedImages.push(imgData);
-        
-        // Create image object for drawing to merged canvas
-        const img = new Image();
-        // Tambahkan ini sebelum img.onload:
-        const overlaySeed = Math.random();
 
+        // Simpan data asli (tanpa efek)
+        const imgData = canvas.toDataURL('image/png');
+        const img = new Image();
+        const overlaySeed = Math.random();
         img.onload = () => {
             currentImages.push({
                 img: img,
@@ -793,11 +778,15 @@ function capturePhoto(style, index) {
                 default:
                     video.style.filter = 'none';
             }
+            // Tambahkan ini agar hasil foto ikut berubah efeknya
+            if (currentImages.length > 0) {
+        updateMergedCanvas();
+    }
         });
         
         function capturePhoto(style, index) {
             return new Promise(resolve => {
-                // Capture gambar
+                // Capture gambar asli (tanpa efek)
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
                 ctx.translate(canvas.width, 0);
@@ -805,24 +794,10 @@ function capturePhoto(style, index) {
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 ctx.setTransform(1, 0, 0, 1, 0, 0);
                 
-                // Apply selected effect
-                if (effectSelect.value !== 'none') {
-                    applyEffect(ctx, effectSelect.value, canvas.width, canvas.height);
-                }
-                
-                // Apply selected overlay
-                if (overlaySelect.value !== 'none') {
-                    drawOverlay(ctx, overlaySelect.value, canvas.width, canvas.height);
-                }
-                
+                // Simpan data asli (tanpa efek)
                 const imgData = canvas.toDataURL('image/png');
-                capturedImages.push(imgData);
-                
-                // Create image object for drawing to merged canvas
                 const img = new Image();
-                // Tambahkan ini sebelum img.onload:
                 const overlaySeed = Math.random();
-
                 img.onload = () => {
                     currentImages.push({
                         img: img,
@@ -999,6 +974,12 @@ shareTiktokBtn.addEventListener('click', () => {
         // Bisa juga redirect ke https://www.tiktok.com/upload?lang=id-ID
         window.open('https://www.tiktok.com/upload?lang=id-ID', '_blank');
     }, 500);
+});
+
+bgColorPicker.addEventListener('input', () => {
+    if (currentImages.length > 0) {
+        updateMergedCanvas();
+    }
 });
     </script>
 </body>
