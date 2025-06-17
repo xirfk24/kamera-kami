@@ -76,7 +76,8 @@
         
         /* Prevent scrolling */
         body {
-            overflow: hidden;
+            /* overflow: hidden; */ /* Hapus baris ini */
+    overflow-x: hidden; /* Tambahkan ini */
         }
         
         /* Stylish buttons */
@@ -156,6 +157,13 @@
         #selected-options div {
             margin: 5px 0;
         }
+        
+        /* Responsive canvas and video */
+video, canvas {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen bg-animation">
@@ -180,13 +188,13 @@
         <p class="text-sm text-center text-gray-600 mb-3">Photobooth Online Yuk!</p>
     </div>
     
-    <div class="flex flex-row items-start gap-8 fade-in">
+    <div class="flex flex-col md:flex-row items-start gap-4 md:gap-8 fade-in w-full max-w-2xl px-2">
         <!-- Left column: fixed camera, controls, and timer -->
-        <div class="flex flex-col items-center">
+        <div class="flex flex-col items-center w-full md:w-auto">
             <!-- Camera container with frame -->
-            <div class="relative rounded-xl overflow-hidden p-1 bg-gradient-to-r from-pink-400 to-purple-500 shadow-lg mb-4">
-                <div class="relative w-64 h-48">
-                    <video id="video" class="rounded-lg transform scale-x-[-1] w-64 h-auto" autoplay></video>
+            <div class="relative rounded-xl overflow-hidden p-1 bg-gradient-to-r from-pink-400 to-purple-500 shadow-lg mb-4 w-full max-w-xs mx-auto">
+                <div class="relative w-full aspect-video">
+                    <video id="video" class="rounded-lg transform scale-x-[-1] w-full h-auto" autoplay playsinline></video>
                     <!-- Flash overlay -->
                     <div id="flash" class="absolute inset-0 bg-white opacity-0 transition-opacity rounded-lg"></div>
                     <!-- Timer display -->
@@ -263,8 +271,8 @@
         </div>
         
         <!-- Right column: result container -->
-        <div id="resultContainer" class="photo-strip hidden fade-in">
-            <canvas id="mergedCanvas" class="rounded"></canvas>
+        <div id="resultContainer" class="photo-strip hidden fade-in w-full max-w-xs mx-auto">
+            <canvas id="mergedCanvas" class="rounded w-full h-auto"></canvas>
         </div>
     </div>
     
@@ -700,13 +708,16 @@ function capturePhoto(style, index) {
             .catch(err => console.error('Error accessing webcam:', err));
 
         captureBtn.addEventListener('click', async () => {
-            if (isCapturing) return; // Mencegah multiple klik saat sedang capture
-            
+            if (isCapturing) return;
             isCapturing = true;
             captureBtn.disabled = true;
             captureBtn.classList.add('opacity-50');
             downloadBtn.classList.add('hidden');
             retryBtn.classList.add('hidden');
+
+            // Pastikan video terlihat, hasil disembunyikan
+            video.classList.remove('hidden');
+            resultContainer.classList.add('hidden');
             
             capturedImages = [];
             currentImages = [];
@@ -840,6 +851,8 @@ function capturePhoto(style, index) {
         retryBtn.addEventListener('click', () => {
             capturedImages = [];
             currentImages = [];
+            // Pastikan video terlihat, hasil disembunyikan
+            video.classList.remove('hidden');
             resultContainer.classList.add('hidden');
             downloadBtn.classList.add('hidden');
             retryBtn.classList.add('hidden');
@@ -900,6 +913,7 @@ customTextInput.addEventListener('input', () => {
 });
 
 window.addEventListener('DOMContentLoaded', () => {
+    requestCamera();
     const lastImage = localStorage.getItem('lastPhotoboothImage');
     if (lastImage) {
         const reDownloadBtn = document.createElement('button');
@@ -971,7 +985,7 @@ shareTiktokBtn.addEventListener('click', () => {
     // Instruksi popup
     setTimeout(() => {
         alert('Foto telah diunduh. Silakan buka aplikasi TikTok, pilih upload, dan pilih foto yang baru saja diunduh.');
-        // Bisa juga redirect ke https://www.tiktok.com/upload?lang=id-ID
+        // Bisa juga redirect to https://www.tiktok.com/upload?lang=id-ID
         window.open('https://www.tiktok.com/upload?lang=id-ID', '_blank');
     }, 500);
 });
@@ -982,5 +996,6 @@ bgColorPicker.addEventListener('input', () => {
     }
 });
     </script>
+    
 </body>
 </html>
