@@ -494,11 +494,27 @@ function capturePhoto(style, index) {
         
         createBubbles();
 
-        // Set smaller photo dimensions to prevent scrolling with 4 photos
-        const photoWidth = 140;  // Lebar foto - reduced
-        const photoHeight = 105; // Tinggi foto - reduced
-        const padding = 8;      // Padding - slightly reduced
-        
+        // Responsive photo size
+let photoWidth, photoHeight, padding;
+function setPhotoSize() {
+    if (window.innerWidth <= 600) {
+        // Mobile: lebih ramping dan tinggi
+        photoWidth = 90;
+        photoHeight = 120;
+        padding = 6;
+    } else {
+        // Desktop/tablet
+        photoWidth = 140;
+        photoHeight = 105;
+        padding = 8;
+    }
+}
+setPhotoSize();
+window.addEventListener('resize', () => {
+    setPhotoSize();
+    if (currentImages.length > 0) updateMergedCanvas();
+});
+
         // Function to draw rounded rectangles
         CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
             if (width < 2 * radius) radius = width / 2;
